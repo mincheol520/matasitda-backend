@@ -295,7 +295,7 @@ router.get('/kakao/callback', async (req, res) => {
       ? 'https://matitda-face.vercel.app'
       : 'http://localhost:8081';
 
-    res.redirect(`${frontendUrl}/auth/success?token=${token}&isNewUser=${isNewUser}`);
+    res.redirect(`matitda://auth/success?token=${token}&isNewUser=${isNewUser}`);
 
   } catch (err) {
   console.error('카카오 콜백 에러:', err.response?.data || err.message);
@@ -303,7 +303,7 @@ router.get('/kakao/callback', async (req, res) => {
     ? 'https://matitda-face.vercel.app'
     : 'http://localhost:8081';
 
-  res.redirect(`${frontendUrl}/auth/error`);
+  res.redirect(`matitda://auth/error`);
 }
 });
 
