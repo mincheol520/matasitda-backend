@@ -31,36 +31,42 @@ module.exports = {
 
     const foodPaths = Array.isArray(foodImagePaths) ? foodImagePaths : [foodImagePaths];
 
-    if (useBase64) {
-      // JSON base64 방식
-      const emptyBase64 = fs.readFileSync(emptyImagePath).toString('base64');
-      const foodBase64s  = foodPaths.map(p => fs.readFileSync(p).toString('base64'));
+    try {
+      if (useBase64) {
+        // JSON base64 방식
+        const emptyBase64 = fs.readFileSync(emptyImagePath).toString('base64');
+        const foodBase64s  = foodPaths.map(p => fs.readFileSync(p).toString('base64'));
 
-      const { data } = await axios.post(
-        `${process.env.AI_SERVER_URL}/analyze/meal`,
-        {
-          empty_image:  emptyBase64,
-          food_images:  foodBase64s,
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 30000,
-        }
-      );
-      return data;
+        const { data } = await axios.post(
+          `${process.env.AI_SERVER_URL}/analyze/meal`,
+          {
+            empty_image:  emptyBase64,
+            food_images:  foodBase64s,
+          },
+          {
+            headers: { 'Content-Type': 'application/json' },
+            timeout: 30000,
+          }
+        );
+        return data;
 
-    } else {
-      // multipart/form-data 방식 (기본)
-      const form = new FormData();
-      form.append('empty_image', fs.createReadStream(emptyImagePath));
-      foodPaths.forEach(p => form.append('food_images[]', fs.createReadStream(p)));
+      } else {
+        // multipart/form-data 방식 (기본)
+        const form = new FormData();
+        form.append('empty_image', fs.createReadStream(emptyImagePath));
+        foodPaths.forEach(p => form.append('food_images[]', fs.createReadStream(p)));
 
-      const { data } = await axios.post(
-        `${process.env.AI_SERVER_URL}/analyze/meal`,
-        form,
-        { headers: { ...form.getHeaders() }, timeout: 30000 }
-      );
-      return data;
+        const { data } = await axios.post(
+          `${process.env.AI_SERVER_URL}/analyze/meal`,
+          form,
+          { headers: { ...form.getHeaders() }, timeout: 30000 }
+        );
+        return data;
+      }
+    } catch (err) {
+      console.error('AI 서버 에러 상태코드:', err.response?.status);
+      console.error('AI 서버 에러 응답:', JSON.stringify(err.response?.data));
+      throw err;
     }
   },
 };
