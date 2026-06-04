@@ -291,11 +291,11 @@ router.get('/kakao/callback', async (req, res) => {
     );
 
     // 5. 토큰 들고 프론트로 리다이렉트
-    res.redirect(`http://localhost:3000/auth/success?token=${token}&isNewUser=${isNewUser}`);
+    res.redirect(`https://matitda-face.vercel.app/auth/success?token=${token}&isNewUser=${isNewUser}`);
 
   } catch (err) {
   console.error('카카오 콜백 에러:', err.response?.data || err.message);
-  res.redirect('http://localhost:3000/auth/error');
+  res.redirect('https://matitda-face.vercel.app/auth/error');
 }
 });
 
