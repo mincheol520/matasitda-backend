@@ -54,7 +54,7 @@ module.exports = {
         // multipart/form-data 방식 (기본)
         const form = new FormData();
         form.append('empty_image', fs.createReadStream(emptyImagePath));
-        foodPaths.forEach(p => form.append('food_images[]', fs.createReadStream(p)));
+        form.append('food_images[]', fs.createReadStream(foodPaths[0]));
 
         const { data } = await axios.post(
           `${process.env.AI_SERVER_URL}/analyze/meal`,
