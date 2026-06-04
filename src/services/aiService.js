@@ -53,8 +53,11 @@ module.exports = {
       } else {
         // multipart/form-data 방식 (기본)
         const form = new FormData();
-        form.append('empty_image', fs.createReadStream(emptyImagePath));
-        form.append('food_images[]', fs.createReadStream(foodPaths[0]));
+        const emptyBuffer = fs.readFileSync(emptyImagePath);
+        const foodBuffer  = fs.readFileSync(foodPaths[0]);
+
+        form.append('empty_image',   emptyBuffer, { filename: 'empty.jpg', contentType: 'image/jpeg' });
+        form.append('food_images[]', foodBuffer,  { filename: 'food.jpg',  contentType: 'image/jpeg' });
 
         const { data } = await axios.post(
           `${process.env.AI_SERVER_URL}/analyze/meal`,
