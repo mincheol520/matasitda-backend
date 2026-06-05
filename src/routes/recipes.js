@@ -3,6 +3,77 @@ const axios   = require('axios');
 const pool    = require('../db');
 const auth    = require('../middlewares/auth');
 
+/**
+ * @swagger
+ * tags:
+ *   name: Recipes
+ *   description: AI 레시피 추천/수정 API
+ */
+
+/**
+ * @swagger
+ * /recipes/recommend:
+ *   post:
+ *     tags: [Recipes]
+ *     summary: 레시피 추천 생성 (1/3/7일)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               days:
+ *                 type: integer
+ *                 example: 3
+ *                 description: 1 | 3 | 7
+ *               meals:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["breakfast", "lunch", "dinner"]
+ *               prompt:
+ *                 type: string
+ *                 example: "단백질 위주로, 매운 음식 빼줘"
+ *     responses:
+ *       200:
+ *         description: 추천 성공
+ *
+ * /recipes/revise:
+ *   post:
+ *     tags: [Recipes]
+ *     summary: 레시피 수정/재생성
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [current_plan]
+ *             properties:
+ *               current_plan:
+ *                 type: object
+ *                 description: 추천 응답 전체
+ *               prompt:
+ *                 type: string
+ *                 example: "저녁은 더 가볍게 바꿔줘"
+ *               regenerate_items:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     day:
+ *                       type: integer
+ *                     meal:
+ *                       type: string
+ *                 example: [{"day": 2, "meal": "dinner"}]
+ *     responses:
+ *       200:
+ *         description: 수정 성공
+ */
+
 const router = express.Router();
 
 // POST /recipes/recommend — 레시피 추천
