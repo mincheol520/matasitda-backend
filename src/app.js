@@ -25,6 +25,7 @@ app.use('/orders',   require('./routes/orders'));
 app.use('/posts',    require('./routes/posts'));
 app.use('/follows',  require('./routes/social'));
 app.use('/friends',  require('./routes/social'));
+app.use('/recipes',  require('./routes/recipes'));
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', time: new Date() });
