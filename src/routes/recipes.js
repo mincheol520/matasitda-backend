@@ -130,4 +130,54 @@ router.post('/revise', auth, async (req, res) => {
   }
 });
 
+// POST /recipes/save — 레시피 저장
+router.post('/save', auth, async (req, res) => {
+  const { userId } = req.user;
+  const { days, meals, prompt, plan, source } = req.body;
+
+  try {
+    const id = require('uuid').v4();
+    await pool.query(
+      `INSERT INTO recipes (id, user_id, days, meals, prompt, plan, source)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, userId, days, JSON.stringify(meals), prompt, JSON.stringify(plan), source || 'fallback']
+    );
+    return res.json({ message: '저장 완료', recipe_id: id });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: '저장 실패' });
+  }
+});
+
+// GET /recipes — 내 저장된 레시피 목록
+router.get('/', auth, async (req, res) => {
+  const { userId } = req.user;
+  try {
+    const [rows] = await pool.query(
+      'SELECT * FROM recipes WHERE user_id = ? ORDER BY created_at DESC',
+      [userId]
+    );
+    return res.json({ recipes: rows });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: '조회 실패' });
+  }
+});
+
+// DELETE /recipes/:id — 레시피 삭제
+router.delete('/:id', auth, async (req, res) => {
+  const { userId } = req.user;
+  const { id } = req.params;
+  try {
+    await pool.query(
+      'DELETE FROM recipes WHERE id = ? AND user_id = ?',
+      [id, userId]
+    );
+    return res.json({ message: '삭제 완료' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: '삭제 실패' });
+  }
+});
+
 module.exports = router;
