@@ -423,7 +423,9 @@ router.get('/today', auth, async (req, res) => {
       return res.json({ active: false, message: '플랜이 종료됐어요' });
     }
 
-    const todayPlan = plan[dayIndex];
+    // plan.plan 배열이 있으면 그걸 쓰고 없으면 plan 자체를 씀
+    const planArray = plan.plan || plan;
+    const todayPlan = planArray[dayIndex];
 
     // 시간대별 현재 식사 추천
     const hour = now.getHours();
