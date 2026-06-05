@@ -4,6 +4,24 @@ const auth    = require('../middlewares/auth');
 
 const router = express.Router();
 
+// GET /users/search?code=AB3K9F2M
+router.get('/search', auth, async (req, res) => {
+  const { code } = req.query;
+  if (!code) return res.status(400).json({ message: 'code가 필요합니다' });
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, nickname, profile_image_url, user_code FROM users WHERE user_code = ?',
+      [code.toUpperCase()]
+    );
+    if (!rows.length) return res.status(404).json({ message: '유저를 찾을 수 없어요' });
+    return res.json({ user: rows[0] });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: '검색 실패' });
+  }
+});
+
 /**
  * @swagger
  * tags:

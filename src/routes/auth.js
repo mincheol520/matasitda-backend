@@ -85,10 +85,11 @@ router.post('/kakao', async (req, res) => {
     } else {
       // 신규 유저 — users 테이블에 저장
       const newId = uuidv4();
+      const userCode = Math.random().toString(36).substring(2, 10).toUpperCase();
       await pool.query(
-        `INSERT INTO users (id, social_provider, social_id, nickname, email)
-         VALUES (?, 'kakao', ?, ?, ?)`,
-        [newId, socialId, nickname, email]
+        `INSERT INTO users (id, social_provider, social_id, nickname, email, user_code)
+         VALUES (?, 'kakao', ?, ?, ?, ?)`,
+        [newId, socialId, nickname, email, userCode]
       );
       // user_points 초기화
       await pool.query(
@@ -270,10 +271,11 @@ router.get('/kakao/callback', async (req, res) => {
       user = rows[0];
     } else {
       const newId = uuidv4();
+      const userCode = Math.random().toString(36).substring(2, 10).toUpperCase();
       await pool.query(
-        `INSERT INTO users (id, social_provider, social_id, nickname, email)
-         VALUES (?, 'kakao', ?, ?, ?)`,
-        [newId, socialId, nickname, email]
+        `INSERT INTO users (id, social_provider, social_id, nickname, email, user_code)
+         VALUES (?, 'kakao', ?, ?, ?, ?)`,
+        [newId, socialId, nickname, email, userCode]
       );
       await pool.query(
         'INSERT INTO user_points (user_id, balance) VALUES (?, 0)',
