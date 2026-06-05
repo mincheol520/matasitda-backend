@@ -111,6 +111,72 @@ const auth    = require('../middlewares/auth');
  *     responses:
  *       200:
  *         description: 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 recipes:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       days:
+ *                         type: integer
+ *                       meals:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       prompt:
+ *                         type: string
+ *                       plan:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             day:
+ *                               type: integer
+ *                             meals:
+ *                               type: array
+ *                               items:
+ *                                 type: object
+ *                                 properties:
+ *                                   id:
+ *                                     type: string
+ *                                   title:
+ *                                     type: string
+ *                                   description:
+ *                                     type: string
+ *                                   ingredients:
+ *                                     type: array
+ *                                     items:
+ *                                       type: string
+ *                                   steps:
+ *                                     type: array
+ *                                     items:
+ *                                       type: string
+ *                                   nutrition:
+ *                                     type: object
+ *                                     properties:
+ *                                       calories:
+ *                                         type: number
+ *                                       carbs_g:
+ *                                         type: number
+ *                                       protein_g:
+ *                                         type: number
+ *                                       fat_g:
+ *                                         type: number
+ *                                   meal:
+ *                                     type: string
+ *                                   meal_label:
+ *                                     type: string
+ *                       source:
+ *                         type: string
+ *                         example: openai
+ *                       created_at:
+ *                         type: string
  *
  * /recipes/{id}:
  *   delete:
