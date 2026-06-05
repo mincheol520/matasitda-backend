@@ -26,8 +26,7 @@ const auth    = require('../middlewares/auth');
  *             properties:
  *               days:
  *                 type: integer
- *                 example: 3
- *                 description: 1 | 3 | 7
+ *                 example: 1
  *               meals:
  *                 type: array
  *                 items:
@@ -35,7 +34,7 @@ const auth    = require('../middlewares/auth');
  *                 example: ["breakfast", "lunch", "dinner"]
  *               prompt:
  *                 type: string
- *                 example: "단백질 위주로, 매운 음식 빼줘"
+ *                 example: "단백질 위주로"
  *     responses:
  *       200:
  *         description: 추천 성공
@@ -55,10 +54,9 @@ const auth    = require('../middlewares/auth');
  *             properties:
  *               current_plan:
  *                 type: object
- *                 description: 추천 응답 전체
  *               prompt:
  *                 type: string
- *                 example: "저녁은 더 가볍게 바꿔줘"
+ *                 example: "저녁은 더 가볍게"
  *               regenerate_items:
  *                 type: array
  *                 items:
@@ -68,10 +66,67 @@ const auth    = require('../middlewares/auth');
  *                       type: integer
  *                     meal:
  *                       type: string
- *                 example: [{"day": 2, "meal": "dinner"}]
+ *                 example: [{"day": 1, "meal": "dinner"}]
  *     responses:
  *       200:
  *         description: 수정 성공
+ *
+ * /recipes/save:
+ *   post:
+ *     tags: [Recipes]
+ *     summary: 레시피 저장
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [days, meals, plan]
+ *             properties:
+ *               days:
+ *                 type: integer
+ *                 example: 1
+ *               meals:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               prompt:
+ *                 type: string
+ *               plan:
+ *                 type: object
+ *               source:
+ *                 type: string
+ *                 example: "openai"
+ *     responses:
+ *       200:
+ *         description: 저장 완료
+ *
+ * /recipes:
+ *   get:
+ *     tags: [Recipes]
+ *     summary: 내 저장된 레시피 목록
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 조회 성공
+ *
+ * /recipes/{id}:
+ *   delete:
+ *     tags: [Recipes]
+ *     summary: 레시피 삭제
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 삭제 완료
  */
 
 const router = express.Router();
