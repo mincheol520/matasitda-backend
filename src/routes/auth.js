@@ -297,6 +297,7 @@ router.get('/kakao/callback', async (req, res) => {
       ? 'https://matitda-face.vercel.app'
       : 'http://localhost:8081';
 
+    console.log('발급된 토큰:', token);
     res.redirect(`matitda://auth/success?token=${token}&isNewUser=${isNewUser}`);
 
   } catch (err) {
