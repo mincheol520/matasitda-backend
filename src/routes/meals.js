@@ -145,7 +145,13 @@ router.post('/analyze', auth, upload.fields([
     // 1. AI 분석 요청
     const aiResult = await aiService.analyzeMeal(emptyImagePath, foodImagePath, false);
 
-    // 2. meal_records 저장
+    // 2. 기존 같은 날짜/끼니 레코드 있으면 삭제 후 재생성
+    await pool.query(
+      'DELETE FROM meal_records WHERE user_id = ? AND meal_date = ? AND meal_type = ?',
+      [userId, meal_date, meal_type]
+    );
+
+    // meal_records 저장
     const mealId = uuidv4();
     await pool.query(
       'INSERT INTO meal_records (id, user_id, meal_date, meal_type) VALUES (?, ?, ?, ?)',
