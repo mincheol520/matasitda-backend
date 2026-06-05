@@ -197,7 +197,7 @@ router.get('/', auth, async (req, res) => {
 
   try {
     const [records] = await pool.query(
-      `SELECT r.*, n.calories, n.carbs_g, n.protein_g, n.fat_g
+      `SELECT r.*, r.score, n.calories, n.carbs_g, n.protein_g, n.fat_g
        FROM meal_records r
        LEFT JOIN meal_nutrition n ON n.meal_record_id = r.id
        WHERE r.user_id = ? AND r.meal_date = ?
