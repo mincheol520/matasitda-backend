@@ -207,10 +207,10 @@ router.get('/', auth, async (req, res) => {
 
     // 하루 합계
     const totals = records.reduce((acc, r) => ({
-      calories:  acc.calories  + (r.calories  || 0),
-      carbs_g:   acc.carbs_g   + (r.carbs_g   || 0),
-      protein_g: acc.protein_g + (r.protein_g || 0),
-      fat_g:     acc.fat_g     + (r.fat_g     || 0),
+      calories:  Math.round((parseFloat(acc.calories)  + parseFloat(r.calories  || 0)) * 10) / 10,
+      carbs_g:   Math.round((parseFloat(acc.carbs_g)   + parseFloat(r.carbs_g   || 0)) * 10) / 10,
+      protein_g: Math.round((parseFloat(acc.protein_g) + parseFloat(r.protein_g || 0)) * 10) / 10,
+      fat_g:     Math.round((parseFloat(acc.fat_g)     + parseFloat(r.fat_g     || 0)) * 10) / 10,
     }), { calories: 0, carbs_g: 0, protein_g: 0, fat_g: 0 });
 
     return res.json({ date, records, totals });
