@@ -145,37 +145,48 @@ const router = express.Router();
  *           description: "오늘 칼로리 / TDEE × 100 (%)"
  */
 
-// POST /follows/:userId — 팔로우/언팔로우 토글
-router.post('/:userId', auth, async (req, res) => {
-  const follower_id  = req.user.userId;
-  const following_id = req.params.userId;
-
-  if (follower_id === following_id) {
-    return res.status(400).json({ message: '자기 자신을 팔로우할 수 없습니다' });
-  }
+// POST /follows/:userCode — 유저코드로 팔로우/언팔로우
+router.post('/:userCode', auth, async (req, res) => {
+  const { userId } = req.user;
+  const { userCode } = req.params;
 
   try {
-    const [[target]] = await pool.query('SELECT id FROM users WHERE id = ?', [following_id]);
-    if (!target) return res.status(404).json({ message: '사용자를 찾을 수 없습니다' });
+    // userCode로 대상 유저 찾기 (UUID도 지원)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userCode);
+    const [targets] = isUUID
+      ? await pool.query('SELECT id FROM users WHERE id = ?', [userCode])
+      : await pool.query('SELECT id FROM users WHERE user_code = ?', [userCode.toUpperCase()]);
 
-    const [[exists]] = await pool.query(
+    if (!targets.length) return res.status(404).json({ message: '유저를 찾을 수 없어요' });
+
+    const targetId = targets[0].id;
+
+    if (targetId === userId) {
+      return res.status(400).json({ message: '자기 자신을 팔로우할 수 없어요' });
+    }
+
+    const [existing] = await pool.query(
       'SELECT id FROM follows WHERE follower_id = ? AND following_id = ?',
-      [follower_id, following_id]
+      [userId, targetId]
     );
 
-    if (exists) {
-      await pool.query('DELETE FROM follows WHERE follower_id = ? AND following_id = ?', [follower_id, following_id]);
+    if (existing.length) {
+      await pool.query(
+        'DELETE FROM follows WHERE follower_id = ? AND following_id = ?',
+        [userId, targetId]
+      );
       return res.json({ following: false });
     } else {
       await pool.query(
-        'INSERT INTO follows (id, follower_id, following_id) VALUES (?, ?, ?)',
-        [uuidv4(), follower_id, following_id]
+        'INSERT INTO follows (id, follower_id, following_id) VALUES (UUID(), ?, ?)',
+        [userId, targetId]
       );
       return res.json({ following: true });
     }
+
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: '팔로우 처리 실패' });
+    return res.status(500).json({ message: '팔로우 실패' });
   }
 });
 
