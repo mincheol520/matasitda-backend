@@ -193,6 +193,72 @@ const auth    = require('../middlewares/auth');
  *     responses:
  *       200:
  *         description: 삭제 완료
+ *
+ * /recipes/{id}/activate:
+ *   post:
+ *     tags: [Recipes]
+ *     summary: 플랜 실행 시작
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 플랜 실행 시작
+ *
+ * /recipes/today:
+ *   get:
+ *     tags: [Recipes]
+ *     summary: 오늘 식단 조회 (시간대별)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 active:
+ *                   type: boolean
+ *                 day:
+ *                   type: integer
+ *                   example: 1
+ *                 total_days:
+ *                   type: integer
+ *                   example: 7
+ *                 current_meal:
+ *                   type: string
+ *                   example: breakfast
+ *                 meals:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       title:
+ *                         type: string
+ *                       meal:
+ *                         type: string
+ *                       meal_label:
+ *                         type: string
+ *                       nutrition:
+ *                         type: object
+ *                         properties:
+ *                           calories:
+ *                             type: number
+ *                           carbs_g:
+ *                             type: number
+ *                           protein_g:
+ *                             type: number
+ *                           fat_g:
+ *                             type: number
  */
 
 const router = express.Router();
@@ -298,6 +364,86 @@ router.delete('/:id', auth, async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: '삭제 실패' });
+  }
+});
+
+// POST /recipes/:id/activate — 플랜 실행
+router.post('/:id/activate', auth, async (req, res) => {
+  const { userId } = req.user;
+  const { id } = req.params;
+
+  try {
+    // 기존 실행 중인 플랜 비활성화
+    await pool.query(
+      'UPDATE recipes SET is_active = FALSE WHERE user_id = ?',
+      [userId]
+    );
+
+    // 선택한 플랜 활성화
+    await pool.query(
+      'UPDATE recipes SET is_active = TRUE, started_at = NOW() WHERE id = ? AND user_id = ?',
+      [id, userId]
+    );
+
+    return res.json({ message: '플랜 실행 시작' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: '실패' });
+  }
+});
+
+// GET /recipes/today — 오늘 식단 (시간대별)
+router.get('/today', auth, async (req, res) => {
+  const { userId } = req.user;
+
+  try {
+    // 실행 중인 플랜 조회
+    const [rows] = await pool.query(
+      'SELECT * FROM recipes WHERE user_id = ? AND is_active = TRUE LIMIT 1',
+      [userId]
+    );
+
+    if (!rows.length) return res.json({ active: false, message: '실행 중인 플랜이 없어요' });
+
+    const recipe = rows[0];
+    const startedAt = new Date(recipe.started_at);
+    const now = new Date();
+
+    // 몇 일차인지 계산
+    const diffMs = now - startedAt;
+    const dayIndex = Math.floor(diffMs / (1000 * 60 * 60 * 24)); // 0부터 시작
+    const plan = typeof recipe.plan === 'string' ? JSON.parse(recipe.plan) : recipe.plan;
+
+    // 플랜 기간 초과하면 비활성화
+    if (dayIndex >= recipe.days) {
+      await pool.query(
+        'UPDATE recipes SET is_active = FALSE WHERE id = ?',
+        [recipe.id]
+      );
+      return res.json({ active: false, message: '플랜이 종료됐어요' });
+    }
+
+    const todayPlan = plan[dayIndex];
+
+    // 시간대별 현재 식사 추천
+    const hour = now.getHours();
+    let currentMeal = null;
+    if (hour >= 5 && hour < 10) currentMeal = 'breakfast';
+    else if (hour >= 10 && hour < 14) currentMeal = 'lunch';
+    else if (hour >= 17 && hour < 20) currentMeal = 'dinner';
+    else if (hour >= 14 && hour < 17) currentMeal = 'snack';
+
+    return res.json({
+      active: true,
+      day: dayIndex + 1,
+      total_days: recipe.days,
+      current_meal: currentMeal,
+      meals: todayPlan?.meals || [],
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: '조회 실패' });
   }
 });
 
